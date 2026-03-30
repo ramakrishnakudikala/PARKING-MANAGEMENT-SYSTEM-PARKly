@@ -1,0 +1,1100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PARKly Admin - User Management</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+  <script src="js/api.js"></script>
+  <style>
+    .admin-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .admin-header {
+      text-align: center;
+      margin-bottom: 30px;
+      padding: 20px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border-radius: 10px;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+
+    .stat-card {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      text-align: center;
+    }
+
+    .stat-number {
+      font-size: 2rem;
+      font-weight: bold;
+      color: #667eea;
+    }
+
+    .stat-label {
+      color: #666;
+      margin-top: 5px;
+    }
+
+    .users-table {
+      background: white;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .table-header {
+      background: #667eea;
+      color: white;
+      padding: 15px 20px;
+      font-weight: bold;
+    }
+
+    .table-content {
+      max-height: 600px;
+      overflow-y: auto;
+    }
+
+    .user-row {
+      display: grid;
+      grid-template-columns: 1fr 150px 150px 100px 150px;
+      gap: 20px;
+      padding: 15px 20px;
+      border-bottom: 1px solid #eee;
+      align-items: center;
+      color: #000;
+    }
+
+    .slot-row {
+      display: grid;
+      grid-template-columns: 120px 150px 150px 120px 150px 120px 150px;
+      gap: 15px;
+      padding: 15px 20px;
+      border-bottom: 1px solid #eee;
+      align-items: center;
+      font-size: 14px;
+    }
+
+    .user-row:hover, .slot-row:hover {
+      background: #f8f9fa;
+    }
+
+    .slot-info {
+      font-weight: 600;
+      color: #333;
+    }
+
+    .mall-badge {
+      background: #007bff;
+      color: white;
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-size: 11px;
+      text-align: center;
+    }
+
+    .slot-type-badge {
+      background: #28a745;
+      color: white;
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-size: 11px;
+      text-align: center;
+    }
+
+    .ev-badge {
+      background: #ffc107;
+      color: #000;
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-size: 11px;
+      text-align: center;
+    }
+
+    .free-slot-btn {
+      background: #dc3545;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 12px;
+      transition: background 0.3s;
+    }
+
+    .free-slot-btn:hover {
+      background: #c82333;
+    }
+
+    .free-slot-btn:disabled {
+      background: #6c757d;
+      cursor: not-allowed;
+    }
+
+    .user-name {
+      font-weight: 600;
+      color: #000;
+    }
+
+    .user-phone {
+      color: #000;
+      font-size: 14px;
+    }
+
+    .vehicle-count {
+      background: #28a745;
+      color: white;
+      padding: 4px 8px;
+      border-radius: 12px;
+      font-size: 12px;
+      text-align: center;
+    }
+
+    .refresh-btn {
+      background: linear-gradient(135deg, #28a745, #20c997);
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-bottom: 20px;
+    }
+
+    .refresh-btn:hover {
+      background: linear-gradient(135deg, #20c997, #28a745);
+    }
+
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: #666;
+    }
+
+    .error {
+      text-align: center;
+      padding: 40px;
+      color: #dc3545;
+      background: #f8d7da;
+      border-radius: 5px;
+      margin: 20px 0;
+    }
+
+    .mall-status-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+      gap: 20px;
+      padding: 20px;
+    }
+
+    .mall-status-card {
+      background: white;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      border: 2px solid #e0e0e0;
+    }
+
+    .mall-status-header {
+      text-align: center;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #f0f0f0;
+    }
+
+    .mall-name {
+      font-size: 1.3rem;
+      font-weight: bold;
+      color: #333;
+      margin-bottom: 5px;
+    }
+
+    .mall-summary {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+
+    .summary-item {
+      text-align: center;
+      padding: 8px;
+      border-radius: 6px;
+      font-size: 0.9rem;
+    }
+
+    .available-summary {
+      background: #e8f5e8;
+      color: #2e7d32;
+      border: 1px solid #4caf50;
+    }
+
+    .occupied-summary {
+      background: #ffebee;
+      color: #c62828;
+      border: 1px solid #f44336;
+    }
+
+    .slot-type-breakdown {
+      margin-top: 10px;
+    }
+
+    .slot-type-title {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #555;
+      margin-bottom: 8px;
+      text-align: center;
+    }
+
+    .slot-type-stats {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .slot-type-stat {
+      background: #f8f9fa;
+      padding: 6px 8px;
+      border-radius: 4px;
+      text-align: center;
+      font-size: 0.8rem;
+      border: 1px solid #dee2e6;
+      color: black;
+    }
+
+    .slot-type-stat.four-wheeler {
+      border-left: 3px solid #2196f3;
+    }
+
+    .slot-type-stat.two-wheeler {
+      border-left: 3px solid #ff9800;
+    }
+
+    .slot-type-stat.ev-slot {
+      border-left: 3px solid #4caf50;
+    }
+
+    .occupancy-bar {
+      width: 100%;
+      height: 8px;
+      background: #e0e0e0;
+      border-radius: 4px;
+      overflow: hidden;
+      margin-top: 10px;
+    }
+
+    .occupancy-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #4caf50, #ff9800, #f44336);
+      transition: width 0.3s ease;
+    }
+
+    .occupancy-percentage {
+      text-align: center;
+      font-size: 0.8rem;
+      color: #666;
+      margin-top: 5px;
+    }
+
+    .slot-grid-container {
+      margin-top: 15px;
+      border-top: 1px solid #e0e0e0;
+      padding-top: 15px;
+    }
+
+    .slot-grid-title {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #555;
+      margin-bottom: 10px;
+      text-align: center;
+    }
+
+    .parking-slot-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 8px;
+      max-width: 300px;
+      margin: 0 auto;
+    }
+
+    .mini-slot {
+      aspect-ratio: 1;
+      border: 2px solid #ddd;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7rem;
+      font-weight: bold;
+      position: relative;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .mini-slot.available {
+      background: #e8f5e8;
+      border-color: #4caf50;
+      color: #2e7d32;
+    }
+
+    .mini-slot.occupied {
+      background: #ffebee;
+      border-color: #f44336;
+      color: #c62828;
+    }
+
+    .mini-slot.four-wheeler-zone {
+      border-color: #2196f3;
+    }
+
+    .mini-slot.two-wheeler-zone {
+      border-color: #ff9800;
+    }
+
+    .mini-slot.ev-zone {
+      border-color: #4caf50;
+      position: relative;
+    }
+
+    .mini-slot.ev-zone::after {
+      content: "⚡";
+      position: absolute;
+      top: -2px;
+      right: -2px;
+      font-size: 8px;
+      background: #4caf50;
+      color: white;
+      border-radius: 50%;
+      width: 12px;
+      height: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .mini-slot:hover {
+      transform: scale(1.1);
+      z-index: 10;
+    }
+
+    .slot-tooltip {
+      position: absolute;
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #333;
+      color: white;
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      white-space: nowrap;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s;
+      z-index: 1000;
+      margin-bottom: 5px;
+    }
+
+    .slot-tooltip::after {
+      content: "";
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      border: 5px solid transparent;
+      border-top-color: #333;
+    }
+
+    .mini-slot:hover .slot-tooltip {
+      opacity: 1;
+    }
+
+    .slot-legend-mini {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      margin-top: 10px;
+      font-size: 0.7rem;
+    }
+
+    .legend-mini-item {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .legend-mini-color {
+      width: 12px;
+      height: 12px;
+      border-radius: 3px;
+      border: 1px solid #ddd;
+    }
+
+    .occupied-slots-list {
+      margin-top: 10px;
+      max-height: 120px;
+      overflow-y: auto;
+      border: 1px solid #e0e0e0;
+      border-radius: 6px;
+      background: #fafafa;
+    }
+
+    .occupied-slot-item {
+      padding: 6px 10px;
+      border-bottom: 1px solid #e0e0e0;
+      font-size: 0.75rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .occupied-slot-item:last-child {
+      border-bottom: none;
+    }
+
+    .slot-number-badge {
+      background: #007bff;
+      color: white;
+      padding: 2px 6px;
+      border-radius: 10px;
+      font-size: 0.65rem;
+      font-weight: bold;
+    }
+
+    .vehicle-info {
+      flex: 1;
+      margin-left: 8px;
+      color: #333;
+    }
+
+    .duration-badge {
+      background: #6c757d;
+      color: white;
+      padding: 2px 6px;
+      border-radius: 10px;
+      font-size: 0.6rem;
+    }
+
+    @media (max-width: 768px) {
+      .user-row, .slot-row {
+        grid-template-columns: 1fr;
+        gap: 5px;
+      }
+      
+      .user-row > div, .slot-row > div {
+        text-align: left;
+      }
+      
+      .slot-row {
+        font-size: 12px;
+      }
+
+      .mall-status-grid {
+        grid-template-columns: 1fr;
+        padding: 10px;
+      }
+
+      .mall-summary {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Logo container -->
+  <div style="text-align: center; padding: 30px 0; background: linear-gradient(to right, #000d6b, #0037a0); margin-bottom: 30px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);">
+    <div style="display: inline-block;">
+      <h1 style="font-size: 3rem; color: black; margin: 0; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);">PARKly</h1>
+      <p style="color: black; margin-top: 5px; font-size: 1.2rem;">Admin Dashboard</p>
+    </div>
+  </div>
+
+  <div class="admin-container">
+    <div class="admin-header">
+      <h2>User Management Dashboard</h2>
+      <p>Monitor and manage registered users</p>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-number" id="totalUsers">-</div>
+        <div class="stat-label">Total Users</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" id="totalVehicles">-</div>
+        <div class="stat-label">Total Vehicles</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" id="todayRegistrations">-</div>
+        <div class="stat-label">Today's Registrations</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" id="occupiedSlots">-</div>
+        <div class="stat-label">Total Occupied Slots</div>
+      </div>
+    </div>
+
+    <!-- Real-time Mall Slot Status -->
+    <div class="users-table" style="margin-bottom: 30px;">
+      <div class="table-header">
+        Real-time Slot Status by Mall
+        <button class="refresh-btn" onclick="loadMallSlotStatus()" style="float: right; margin: 0; padding: 5px 15px; font-size: 12px;">🔄 Refresh Status</button>
+      </div>
+      <div class="table-content" id="mallSlotStatusContent">
+        <div class="loading">Loading mall slot status...</div>
+      </div>
+    </div>
+
+    <button class="refresh-btn" onclick="loadUsers()">🔄 Refresh Data</button>
+
+    <div class="users-table">
+      <div class="table-header">
+        Registered Users
+      </div>
+      <div class="table-content" id="usersTableContent">
+        <div class="loading">Loading users...</div>
+      </div>
+    </div>
+
+    <!-- Slot Management Section -->
+    <div class="users-table" style="margin-top: 30px;">
+      <div class="table-header">
+        Slot Management - Occupied Slots
+        <button class="refresh-btn" onclick="loadOccupiedSlots()" style="float: right; margin: 0; padding: 5px 15px; font-size: 12px;">🔄 Refresh Slots</button>
+      </div>
+      <div class="table-content" id="slotsTableContent">
+        <div class="loading">Loading occupied slots...</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let allUsers = [];
+    let occupiedSlots = {};
+
+    async function loadUsers() {
+      const tableContent = document.getElementById('usersTableContent');
+      tableContent.innerHTML = '<div class="loading">Loading users...</div>';
+
+      try {
+        const result = await getAllUsers();
+        
+        if (result.success) {
+          allUsers = result.users;
+          displayUsers(allUsers);
+          updateStats(allUsers);
+        } else {
+          throw new Error(result.message || 'Failed to load users');
+        }
+      } catch (error) {
+        console.error('Error loading users:', error);
+        tableContent.innerHTML = `<div class="error">Error loading users: ${error.message}</div>`;
+      }
+    }
+
+    function displayUsers(users) {
+      const tableContent = document.getElementById('usersTableContent');
+      
+      if (users.length === 0) {
+        tableContent.innerHTML = '<div class="loading">No users registered yet.</div>';
+        return;
+      }
+
+      tableContent.innerHTML = users.map(user => `
+        <div class="user-row">
+          <div>
+            <div class="user-name">${user.name}</div>
+            <div class="user-phone">License: ${user.license_number}</div>
+          </div>
+          <div>${user.phone_number}</div>
+          <div class="vehicle-count">${user.vehicle_count} vehicle${user.vehicle_count !== 1 ? 's' : ''}</div>
+          <div>${new Date(user.created_at).toLocaleDateString()}</div>
+          <div>
+            <button onclick="viewUserDetails('${user.phone_number}')" style="background: #007bff; color: black; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer;">
+              View Details
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function updateStats(users) {
+      const totalUsers = users.length;
+      const totalVehicles = users.reduce((sum, user) => sum + user.vehicle_count, 0);
+      
+      const today = new Date().toDateString();
+      const todayRegistrations = users.filter(user => 
+        new Date(user.created_at).toDateString() === today
+      ).length;
+
+      // Count occupied slots
+      let totalOccupiedSlots = 0;
+      for (let mallKey in occupiedSlots) {
+        totalOccupiedSlots += Object.keys(occupiedSlots[mallKey]).length;
+      }
+
+      document.getElementById('totalUsers').textContent = totalUsers;
+      document.getElementById('totalVehicles').textContent = totalVehicles;
+      document.getElementById('todayRegistrations').textContent = todayRegistrations;
+      document.getElementById('occupiedSlots').textContent = totalOccupiedSlots;
+    }
+
+    async function viewUserDetails(phoneNumber) {
+      try {
+        const result = await getUserByPhone(phoneNumber);
+        
+        if (result.success) {
+          const user = result.user;
+          const vehiclesList = user.vehicles.map(v => 
+            `${v.vehicleNo} (${v.vehicleType}${v.isEV ? ', EV' : ''})`
+          ).join('\n');
+          
+          alert(`User Details:
+Name: ${user.name}
+Phone: ${user.phoneNumber}
+License: ${user.licenseNumber}
+Registered: ${new Date(user.createdAt).toLocaleString()}
+
+Vehicles:
+${vehiclesList || 'No vehicles registered'}`);
+        } else {
+          alert('Error loading user details: ' + result.message);
+        }
+      } catch (error) {
+        alert('Error loading user details: ' + error.message);
+      }
+    }
+
+    // Slot Management Functions
+    function loadOccupiedSlots() {
+      const slotsTableContent = document.getElementById('slotsTableContent');
+      slotsTableContent.innerHTML = '<div class="loading">Loading occupied slots...</div>';
+
+      try {
+        // Load occupied slots from localStorage
+        occupiedSlots = JSON.parse(localStorage.getItem('bookedSlots')) || {};
+        displayOccupiedSlots();
+        updateStats(allUsers); // Update stats with new slot count
+      } catch (error) {
+        console.error('Error loading occupied slots:', error);
+        slotsTableContent.innerHTML = `<div class="error">Error loading slots: ${error.message}</div>`;
+      }
+    }
+
+    function displayOccupiedSlots() {
+      const slotsTableContent = document.getElementById('slotsTableContent');
+      
+      let allSlots = [];
+      
+      // Convert occupied slots to array format
+      for (let mallKey in occupiedSlots) {
+        for (let slotId in occupiedSlots[mallKey]) {
+          const booking = occupiedSlots[mallKey][slotId];
+          const mallName = getMallDisplayName(mallKey.split('_')[0]);
+          const slotType = mallKey.includes('_EV') ? 'EV' : mallKey.split('_')[1];
+          
+          allSlots.push({
+            mallKey: mallKey,
+            slotId: slotId,
+            mallName: mallName,
+            slotType: slotType,
+            booking: booking
+          });
+        }
+      }
+
+      if (allSlots.length === 0) {
+        slotsTableContent.innerHTML = '<div class="loading">No occupied slots found.</div>';
+        return;
+      }
+
+      // Add header row
+      let slotsHTML = `
+        <div class="slot-row" style="background: #f8f9fa; font-weight: bold; color: #007bff;">
+          <div>Slot ID</div>
+          <div>Mall</div>
+          <div>Vehicle No</div>
+          <div>Type</div>
+          <div>Entry Time</div>
+          <div>Duration</div>
+          <div>Action</div>
+        </div>
+      `;
+
+      slotsHTML += allSlots.map(slot => {
+        const entryTime = new Date(slot.booking.entryTime);
+        const now = new Date();
+        const durationMs = now - entryTime;
+        const durationHours = Math.floor(durationMs / (1000 * 60 * 60));
+        const durationMinutes = Math.floor((durationMs % (1000 * 60 * 60)) / (1000 * 60));
+        const durationText = `${durationHours}h ${durationMinutes}m`;
+
+        return `
+          <div class="slot-row" style="color: #000;">
+            <div class="slot-info">${slot.slotId}</div>
+            <div><span class="mall-badge">${slot.mallName}</span></div>
+            <div class="slot-info">${slot.booking.vehicleNo}</div>
+            <div>
+              <span class="slot-type-badge">${slot.slotType}</span>
+              ${slot.booking.isEV ? '<span class="ev-badge">EV</span>' : ''}
+            </div>
+            <div>${entryTime.toLocaleString()}</div>
+            <div>${durationText}</div>
+            <div>
+              <button class="free-slot-btn" onclick="freeSlot('${slot.mallKey}', '${slot.slotId}', '${slot.booking.vehicleNo}')">
+                Free Slot
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      slotsTableContent.innerHTML = slotsHTML;
+    }
+
+    function getMallDisplayName(mallValue) {
+      const mallNames = {
+        "Mall A": "Next Galleria",
+        "Mall B": "Inrobit Mall", 
+        "Mall C": "GVK Mall"
+      };
+      return mallNames[mallValue] || mallValue;
+    }
+
+    async function freeSlot(mallKey, slotId, vehicleNo) {
+      if (!confirm(`Are you sure you want to free slot ${slotId} for vehicle ${vehicleNo}?`)) {
+        return;
+      }
+
+      try {
+        // Remove from localStorage
+        const bookedSlots = JSON.parse(localStorage.getItem('bookedSlots')) || {};
+        
+        if (bookedSlots[mallKey] && bookedSlots[mallKey][slotId]) {
+          delete bookedSlots[mallKey][slotId];
+          
+          // Clean up empty mall entries
+          if (Object.keys(bookedSlots[mallKey]).length === 0) {
+            delete bookedSlots[mallKey];
+          }
+          
+          localStorage.setItem('bookedSlots', JSON.stringify(bookedSlots));
+          
+          // Also remove from currentBooking if it matches
+          const currentBooking = JSON.parse(localStorage.getItem('currentBooking'));
+          if (currentBooking && currentBooking.slotNumber === slotId && currentBooking.vehicleNo === vehicleNo) {
+            localStorage.removeItem('currentBooking');
+          }
+          
+          alert(`Slot ${slotId} has been freed successfully!`);
+          
+          // Refresh the slots display
+          loadOccupiedSlots();
+        } else {
+          alert('Slot not found or already freed.');
+        }
+      } catch (error) {
+        console.error('Error freeing slot:', error);
+        alert('Error freeing slot: ' + error.message);
+      }
+    }
+
+    // Mall slot status functions
+    function loadMallSlotStatus() {
+      const mallSlotStatusContent = document.getElementById('mallSlotStatusContent');
+      mallSlotStatusContent.innerHTML = '<div class="loading">Loading mall slot status...</div>';
+
+      try {
+        // Load occupied slots from localStorage
+        const bookedSlots = JSON.parse(localStorage.getItem('bookedSlots')) || {};
+        displayMallSlotStatus(bookedSlots);
+      } catch (error) {
+        console.error('Error loading mall slot status:', error);
+        mallSlotStatusContent.innerHTML = `<div class="error">Error loading mall status: ${error.message}</div>`;
+      }
+    }
+
+    function displayMallSlotStatus(bookedSlots) {
+      const mallSlotStatusContent = document.getElementById('mallSlotStatusContent');
+      
+      // Define mall configuration
+      const malls = [
+        { key: "Mall A", name: "Next Galleria" },
+        { key: "Mall B", name: "Inrobit Mall" },
+        { key: "Mall C", name: "GVK Mall" }
+      ];
+
+      // Define slot allocation per mall (25 slots total)
+      const slotAllocation = {
+        "4 Wheeler": { start: 1, end: 10, total: 10 },
+        "2 Wheeler": { start: 11, end: 20, total: 10 },
+        "2 Wheeler EV": { start: 21, end: 23, total: 3 },
+        "4 Wheeler EV": { start: 24, end: 25, total: 2 }
+      };
+
+      let mallStatusHTML = '<div class="mall-status-grid">';
+
+      malls.forEach(mall => {
+        const mallStats = calculateMallStats(mall.key, bookedSlots, slotAllocation);
+        
+        mallStatusHTML += `
+          <div class="mall-status-card">
+            <div class="mall-status-header">
+              <div class="mall-name">${mall.name}</div>
+            </div>
+            
+            <div class="mall-summary">
+              <div class="summary-item available-summary">
+                <strong>${mallStats.totalAvailable}</strong><br>
+                Available Slots
+              </div>
+              <div class="summary-item occupied-summary">
+                <strong>${mallStats.totalOccupied}</strong><br>
+                Occupied Slots
+              </div>
+            </div>
+
+            <div class="slot-type-breakdown">
+              <div class="slot-type-title">Slot Breakdown by Type</div>
+              
+              <div class="slot-type-stats">
+                <div class="slot-type-stat four-wheeler">
+                  <strong>4-Wheeler</strong><br>
+                  ${mallStats.fourWheeler.available}/${mallStats.fourWheeler.total} Available
+                </div>
+                <div class="slot-type-stat two-wheeler">
+                  <strong>2-Wheeler</strong><br>
+                  ${mallStats.twoWheeler.available}/${mallStats.twoWheeler.total} Available
+                </div>
+                <div class="slot-type-stat ev-slot">
+                  <strong>2W EV</strong><br>
+                  ${mallStats.twoWheelerEV.available}/${mallStats.twoWheelerEV.total} Available
+                </div>
+                <div class="slot-type-stat ev-slot">
+                  <strong>4W EV</strong><br>
+                  ${mallStats.fourWheelerEV.available}/${mallStats.fourWheelerEV.total} Available
+                </div>
+              </div>
+            </div>
+
+            <div class="occupancy-bar">
+              <div class="occupancy-fill" style="width: ${mallStats.occupancyPercentage}%"></div>
+            </div>
+            <div class="occupancy-percentage">
+              ${mallStats.occupancyPercentage}% Occupied (${mallStats.totalOccupied}/25 slots)
+            </div>
+
+            <div class="slot-grid-container">
+              <div class="slot-grid-title">Slot Layout (Hover for details)</div>
+              <div class="parking-slot-grid">
+                ${generateSlotGrid(mall.key, bookedSlots)}
+              </div>
+              <div class="slot-legend-mini">
+                <div class="legend-mini-item">
+                  <div class="legend-mini-color" style="background: #e8f5e8; border-color: #4caf50;"></div>
+                  <span>Available</span>
+                </div>
+                <div class="legend-mini-item">
+                  <div class="legend-mini-color" style="background: #ffebee; border-color: #f44336;"></div>
+                  <span>Occupied</span>
+                </div>
+                <div class="legend-mini-item">
+                  <div class="legend-mini-color" style="background: #e3f2fd; border-color: #2196f3;"></div>
+                  <span>4W</span>
+                </div>
+                <div class="legend-mini-item">
+                  <div class="legend-mini-color" style="background: #fff3e0; border-color: #ff9800;"></div>
+                  <span>2W</span>
+                </div>
+              </div>
+              
+              ${mallStats.occupiedSlotsList.length > 0 ? `
+                <div class="occupied-slots-list">
+                  ${mallStats.occupiedSlotsList.map(slot => `
+                    <div class="occupied-slot-item">
+                      <span class="slot-number-badge">${slot.slotNumber}</span>
+                      <div class="vehicle-info">${slot.vehicleNo} (${slot.vehicleType}${slot.isEV ? ' EV' : ''})</div>
+                      <span class="duration-badge">${slot.duration}</span>
+                    </div>
+                  `).join('')}
+                </div>
+              ` : ''}
+            </div>
+          </div>
+        `;
+      });
+
+      mallStatusHTML += '</div>';
+      mallSlotStatusContent.innerHTML = mallStatusHTML;
+    }
+
+    function calculateMallStats(mallKey, bookedSlots, slotAllocation) {
+      const stats = {
+        totalOccupied: 0,
+        totalAvailable: 25,
+        occupancyPercentage: 0,
+        fourWheeler: { occupied: 0, available: 10, total: 10 },
+        twoWheeler: { occupied: 0, available: 10, total: 10 },
+        twoWheelerEV: { occupied: 0, available: 3, total: 3 },
+        fourWheelerEV: { occupied: 0, available: 2, total: 2 },
+        occupiedSlotsList: []
+      };
+
+      // Count occupied slots for each vehicle type in this mall
+      const mallSlotKeys = [
+        `${mallKey}_4 Wheeler`,
+        `${mallKey}_2 Wheeler`, 
+        `${mallKey}_2 Wheeler_EV`,
+        `${mallKey}_4 Wheeler_EV`
+      ];
+
+      mallSlotKeys.forEach(slotKey => {
+        if (bookedSlots[slotKey]) {
+          const occupiedSlots = Object.keys(bookedSlots[slotKey]);
+          
+          // Add to occupied slots list with details
+          occupiedSlots.forEach(slotNumber => {
+            const booking = bookedSlots[slotKey][slotNumber];
+            const entryTime = new Date(booking.entryTime);
+            const now = new Date();
+            const durationMs = now - entryTime;
+            const durationHours = Math.floor(durationMs / (1000 * 60 * 60));
+            const durationMinutes = Math.floor((durationMs % (1000 * 60 * 60)) / (1000 * 60));
+            const duration = `${durationHours}h ${durationMinutes}m`;
+
+            stats.occupiedSlotsList.push({
+              slotNumber: slotNumber,
+              vehicleNo: booking.vehicleNo,
+              vehicleType: booking.vehicleType,
+              isEV: booking.isEV,
+              entryTime: booking.entryTime,
+              duration: duration
+            });
+          });
+          
+          if (slotKey.includes('4 Wheeler_EV')) {
+            stats.fourWheelerEV.occupied = occupiedSlots.length;
+            stats.fourWheelerEV.available = stats.fourWheelerEV.total - occupiedSlots.length;
+          } else if (slotKey.includes('2 Wheeler_EV')) {
+            stats.twoWheelerEV.occupied = occupiedSlots.length;
+            stats.twoWheelerEV.available = stats.twoWheelerEV.total - occupiedSlots.length;
+          } else if (slotKey.includes('4 Wheeler')) {
+            stats.fourWheeler.occupied = occupiedSlots.length;
+            stats.fourWheeler.available = stats.fourWheeler.total - occupiedSlots.length;
+          } else if (slotKey.includes('2 Wheeler')) {
+            stats.twoWheeler.occupied = occupiedSlots.length;
+            stats.twoWheeler.available = stats.twoWheeler.total - occupiedSlots.length;
+          }
+          
+          stats.totalOccupied += occupiedSlots.length;
+        }
+      });
+
+      // Sort occupied slots by slot number
+      stats.occupiedSlotsList.sort((a, b) => parseInt(a.slotNumber) - parseInt(b.slotNumber));
+
+      stats.totalAvailable = 25 - stats.totalOccupied;
+      stats.occupancyPercentage = Math.round((stats.totalOccupied / 25) * 100);
+
+      return stats;
+    }
+
+    function generateSlotGrid(mallKey, bookedSlots) {
+      let gridHTML = '';
+      
+      // Create all occupied slots map for this mall
+      const allOccupiedSlots = {};
+      const mallSlotKeys = [
+        `${mallKey}_4 Wheeler`,
+        `${mallKey}_2 Wheeler`, 
+        `${mallKey}_2 Wheeler_EV`,
+        `${mallKey}_4 Wheeler_EV`
+      ];
+
+      mallSlotKeys.forEach(slotKey => {
+        if (bookedSlots[slotKey]) {
+          Object.keys(bookedSlots[slotKey]).forEach(slotNumber => {
+            allOccupiedSlots[slotNumber] = bookedSlots[slotKey][slotNumber];
+          });
+        }
+      });
+
+      // Generate 25 slots (5x5 grid)
+      for (let i = 1; i <= 25; i++) {
+        const slotNumber = i.toString();
+        const isOccupied = allOccupiedSlots[slotNumber];
+        
+        // Determine slot zone and styling
+        let zoneClass = '';
+        let zoneLabel = '';
+        
+        if (i >= 1 && i <= 10) {
+          zoneClass = 'four-wheeler-zone';
+          zoneLabel = '4-Wheeler Zone';
+        } else if (i >= 11 && i <= 20) {
+          zoneClass = 'two-wheeler-zone';
+          zoneLabel = '2-Wheeler Zone';
+        } else if (i >= 21 && i <= 23) {
+          zoneClass = 'ev-zone';
+          zoneLabel = '2-Wheeler EV Zone';
+        } else if (i >= 24 && i <= 25) {
+          zoneClass = 'ev-zone';
+          zoneLabel = '4-Wheeler EV Zone';
+        }
+
+        const occupiedClass = isOccupied ? 'occupied' : 'available';
+        const statusText = isOccupied ? 'Occupied' : 'Available';
+        
+        let tooltipContent = `Slot ${i} - ${statusText}<br>${zoneLabel}`;
+        if (isOccupied) {
+          const entryTime = new Date(isOccupied.entryTime);
+          const now = new Date();
+          const durationMs = now - entryTime;
+          const durationHours = Math.floor(durationMs / (1000 * 60 * 60));
+          const durationMinutes = Math.floor((durationMs % (1000 * 60 * 60)) / (1000 * 60));
+          
+          tooltipContent = `Slot ${i} - ${statusText}<br>Vehicle: ${isOccupied.vehicleNo}<br>Type: ${isOccupied.vehicleType}${isOccupied.isEV ? ' (EV)' : ''}<br>Duration: ${durationHours}h ${durationMinutes}m<br>Entry: ${entryTime.toLocaleString()}`;
+        }
+
+        gridHTML += `
+          <div class="mini-slot ${occupiedClass} ${zoneClass}">
+            ${i}
+            <div class="slot-tooltip">${tooltipContent}</div>
+          </div>
+        `;
+      }
+
+      return gridHTML;
+    }
+
+    // Load users and slots when page loads
+    window.addEventListener('load', () => {
+      loadUsers();
+      loadOccupiedSlots();
+      loadMallSlotStatus();
+    });
+
+    // Auto-refresh every 30 seconds
+    setInterval(() => {
+      loadUsers();
+      loadOccupiedSlots();
+      loadMallSlotStatus();
+    }, 30000);
+  </script>
+</body>
+</html>

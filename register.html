@@ -1,0 +1,669 @@
+<!-- register.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>New User Registration - PARKly</title>
+  <!-- Google Fonts - Poppins -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+  <script src="js/utils.js"></script>
+  <script src="js/api.js"></script>
+  <style>
+    .logo-container {
+      text-align: center;
+      padding: 30px 0;
+      background: linear-gradient(to right, #000d6b, #0037a0);
+      margin-bottom: 30px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+    
+    .logo {
+      display: inline-block;
+    }
+    
+    .logo h1 {
+      font-size: 3rem;
+      color: white;
+      margin: 0;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    }
+    
+    .logo p {
+      color: #dcdcdc;
+      margin-top: 5px;
+      font-size: 1.2rem;
+    }
+    
+    .step-indicator {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+    
+    .step {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background-color: #ddd;
+      color: #333;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 10px;
+      font-weight: bold;
+    }
+    
+    .step.active {
+      background-color: orange;
+      color: white;
+    }
+    
+    .step-line {
+      height: 3px;
+      background-color: #ddd;
+      width: 50px;
+      margin-top: 15px;
+    }
+    
+    .add-vehicle-btn {
+      background: linear-gradient(135deg, #28a745, #20c997) !important;
+      box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3) !important;
+    }
+    
+    .add-vehicle-btn:hover {
+      background: linear-gradient(135deg, #20c997, #28a745) !important;
+      box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4) !important;
+    }
+    
+    .vehicle-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px;
+      margin-bottom: 8px;
+      background: white;
+      border-radius: 6px;
+      border: 1px solid #dee2e6;
+      transition: all 0.2s ease;
+    }
+    
+    .vehicle-item:hover {
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      transform: translateY(-1px);
+    }
+    
+    .vehicle-info {
+      flex: 1;
+    }
+    
+    .vehicle-number {
+      font-weight: bold;
+      color: #495057;
+      font-size: 16px;
+    }
+    
+    .vehicle-type {
+      color: #6c757d;
+      font-size: 14px;
+      margin-left: 8px;
+    }
+    
+    .ev-badge {
+      color: #28a745;
+      font-size: 12px;
+      margin-left: 8px;
+      font-weight: bold;
+    }
+    
+    .added-vehicles-container {
+      margin: 20px 0;
+      padding: 15px;
+      background: #f8f9fa;
+      border-radius: 8px;
+      border: 1px solid #dee2e6;
+    }
+    
+    .added-vehicles-title {
+      margin: 0 0 15px 0;
+      color: #495057;
+      font-size: 16px;
+      font-weight: 600;
+    }
+    
+    .vehicle-form {
+      background: #f8f9fa;
+      border: 2px solid #dee2e6;
+      border-radius: 8px;
+      padding: 20px;
+      margin: 15px 0;
+      position: relative;
+      transition: all 0.3s ease;
+    }
+    
+    .vehicle-form:hover {
+      border-color: #28a745;
+      box-shadow: 0 2px 10px rgba(40, 167, 69, 0.1);
+    }
+    
+    .vehicle-form-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #dee2e6;
+    }
+    
+    .vehicle-form-title {
+      font-weight: bold;
+      color: #495057;
+      margin: 0;
+    }
+    
+    .remove-form-btn {
+      background: linear-gradient(135deg, #dc3545, #c82333) !important;
+      padding: 5px 10px !important;
+      font-size: 12px !important;
+      margin: 0 !important;
+    }
+    
+    .remove-form-btn:hover {
+      background: linear-gradient(135deg, #c82333, #dc3545) !important;
+    }
+    
+    .vehicle-form-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 15px;
+      justify-content: flex-end;
+    }
+    
+    .save-vehicle-btn {
+      background: linear-gradient(135deg, #28a745, #20c997) !important;
+      padding: 8px 16px !important;
+      font-size: 14px !important;
+      margin: 0 !important;
+    }
+    
+    .save-vehicle-btn:hover {
+      background: linear-gradient(135deg, #20c997, #28a745) !important;
+    }
+    
+    .cancel-vehicle-btn {
+      background: linear-gradient(135deg, #6c757d, #5a6268) !important;
+      padding: 8px 16px !important;
+      font-size: 14px !important;
+      margin: 0 !important;
+    }
+    
+    .cancel-vehicle-btn:hover {
+      background: linear-gradient(135deg, #5a6268, #6c757d) !important;
+    }
+  </style>
+</head>
+<body>
+  <!-- Logo container -->
+  <div style="text-align: center; padding: 30px 0; background: linear-gradient(to right, #000d6b, #0037a0); margin-bottom: 30px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);">
+    <div style="display: inline-block;">
+      <h1 style="font-size: 3rem; color: white; margin: 0; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);">PARKly</h1>
+      <p style="color: #dcdcdc; margin-top: 5px; font-size: 1.2rem;">Parking made efficiently</p>
+    </div>
+  </div>
+  
+  <div class="container">
+    
+    <div class="form-container">
+      <h2 style="text-align: center; margin-bottom: 30px; color: #333; font-size: 2rem; font-weight: bold;">New User - Registration</h2>
+      
+      <form id="step1Form" onsubmit="event.preventDefault(); goToNextStep();">
+        <label for="name">Your Name</label>
+        <input type="text" id="name" placeholder="Enter your name" required aria-required="true">
+        <div id="nameError" class="error-message"></div>
+
+        <label for="phoneNo">Phone Number</label>
+        <input type="tel" id="phoneNo" placeholder="Enter 10-digit phone number" maxlength="10" required aria-required="true">
+        <div id="phoneError" class="error-message"></div>
+        
+        <!-- Add Vehicle Button -->
+        <div style="margin: 15px 0;">
+          <button type="button" id="addVehicleBtn" onclick="addVehicle()" class="add-vehicle-btn" style="margin-right: 10px;">
+            + Add Vehicle
+          </button>
+          <span style="font-size: 14px; color: #666;">Add multiple vehicles to your account</span>
+        </div>
+
+        <!-- Dynamic Vehicle Forms Container -->
+        <div id="vehicleFormsContainer"></div>
+
+        <!-- Added Vehicles Display -->
+        <div id="addedVehiclesContainer" class="added-vehicles-container" style="display: none;">
+          <h4 id="addedVehiclesTitle" class="added-vehicles-title">Added Vehicles:</h4>
+          <div id="addedVehiclesList"></div>
+        </div>
+
+        <label for="licenseNo">License Number</label>
+        <input type="text" id="licenseNo" placeholder="Enter your license number" required aria-required="true">
+        <div id="licenseError" class="error-message"></div>
+
+        <div class="button-group">
+          <button type="submit">Register</button>
+          <button type="button" class="secondary" onclick="window.location.href='index.html'">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // Array to store added vehicles and form counter
+    let addedVehicles = [];
+    let vehicleFormCounter = 0;
+
+    // License number input is now always visible, no need for showProofInput function
+
+    function addVehicle() {
+      vehicleFormCounter++;
+      const formId = `vehicleForm_${vehicleFormCounter}`;
+      
+      const vehicleForm = document.createElement("div");
+      vehicleForm.className = "vehicle-form";
+      vehicleForm.id = formId;
+      
+      vehicleForm.innerHTML = `
+        <div class="vehicle-form-header">
+          <h4 class="vehicle-form-title">Vehicle ${vehicleFormCounter}</h4>
+          <button type="button" class="remove-form-btn" onclick="removeVehicleForm('${formId}')">
+            ✕ Remove
+          </button>
+        </div>
+        
+        <label for="vehicleNo_${vehicleFormCounter}">Vehicle Number</label>
+        <input type="text" id="vehicleNo_${vehicleFormCounter}" placeholder="Enter vehicle number (AA00AA0000)" required>
+        <div id="vehicleError_${vehicleFormCounter}" class="error-message"></div>
+
+        <div class="radio-group" style="display: flex; flex-direction: column; gap: 3px;">
+          <label style="display: flex; align-items: center;">
+            2Wheeler 
+            <input type="radio" name="vehicleType_${vehicleFormCounter}" value="2 Wheeler" required>
+          </label>
+          <label style="display: flex; align-items: center;">
+            4Wheeler 
+            <input type="radio" name="vehicleType_${vehicleFormCounter}" value="4 Wheeler">
+          </label>
+          <label style="display: flex; align-items: center;">
+            Electric Vehicle (EV)
+            <input type="checkbox" id="isEV_${vehicleFormCounter}">
+          </label>
+        </div>
+        <div id="vehicleTypeError_${vehicleFormCounter}" class="error-message"></div>
+
+        <div class="vehicle-form-actions">
+          <button type="button" class="cancel-vehicle-btn" onclick="removeVehicleForm('${formId}')">
+            Cancel
+          </button>
+          <button type="button" class="save-vehicle-btn" onclick="saveVehicle('${formId}', ${vehicleFormCounter})">
+            Save Vehicle
+          </button>
+        </div>
+      `;
+      
+      // Add uppercase conversion for vehicle number
+      const vehicleInput = vehicleForm.querySelector(`#vehicleNo_${vehicleFormCounter}`);
+      vehicleInput.addEventListener("input", function() {
+        this.value = this.value.toUpperCase();
+      });
+      
+      document.getElementById("vehicleFormsContainer").appendChild(vehicleForm);
+      
+      // Focus on the vehicle number input
+      vehicleInput.focus();
+    }
+
+    function removeVehicleForm(formId) {
+      if (confirmAction("Are you sure you want to remove this vehicle form?")) {
+        const form = document.getElementById(formId);
+        if (form) {
+          form.remove();
+          showToast("Vehicle form removed!");
+        }
+      }
+    }
+
+    async function saveVehicle(formId, formNumber) {
+      clearFormErrors(formNumber);
+      
+      const vehicleNo = document.getElementById(`vehicleNo_${formNumber}`).value.trim().toUpperCase();
+      const vehicleTypeElement = document.querySelector(`input[name="vehicleType_${formNumber}"]:checked`);
+      const isEV = document.getElementById(`isEV_${formNumber}`).checked;
+      
+      let isValid = true;
+      
+      // Validate vehicle number format
+      if (!validateVehicleNumber(vehicleNo)) {
+        isValid = showFormError(formNumber, "vehicleError", "Invalid vehicle number format. Use AA00AA0000");
+      }
+      
+      // Validate vehicle type selection
+      if (!vehicleTypeElement) {
+        isValid = showFormError(formNumber, "vehicleTypeError", "Please select a vehicle type");
+      }
+      
+      if (!isValid) {
+        return;
+      }
+      
+      // Check if vehicle is already added to current form
+      if (addedVehicles.some(v => v.vehicleNo === vehicleNo)) {
+        showFormError(formNumber, "vehicleError", "This vehicle is already added");
+        return;
+      }
+      
+      // Show loading state
+      const saveBtn = document.querySelector(`#${formId} .save-vehicle-btn`);
+      const originalText = saveBtn.textContent;
+      saveBtn.textContent = "Checking...";
+      saveBtn.disabled = true;
+      
+      try {
+        // Check if vehicle is already registered in the backend
+        const vehicleCheck = await validateVehicleWithBackend(vehicleNo);
+        
+        if (!vehicleCheck.isValid) {
+          showFormError(formNumber, "vehicleError", vehicleCheck.message);
+          return;
+        }
+        
+        // Get owner name from the form
+        const ownerName = document.getElementById("name").value.trim();
+        
+        // Add vehicle to the list
+        const vehicle = {
+          vehicleNo: vehicleNo,
+          vehicleType: vehicleTypeElement.value,
+          isEV: isEV,
+          ownerName: ownerName
+        };
+        
+        addedVehicles.push(vehicle);
+        
+        // Save vehicle to local storage (for backward compatibility)
+        addRegisteredVehicle(vehicle);
+        
+        updateAddedVehiclesDisplay();
+        
+        // Remove the form
+        document.getElementById(formId).remove();
+        showToast("Vehicle added successfully!");
+        
+      } catch (error) {
+        console.error('Error validating vehicle:', error);
+        showFormError(formNumber, "vehicleError", "Unable to verify vehicle. Please try again.");
+      } finally {
+        // Restore button state
+        saveBtn.textContent = originalText;
+        saveBtn.disabled = false;
+      }
+    }
+
+    function removeVehicle(index) {
+      if (confirmAction("Are you sure you want to remove this vehicle?")) {
+        addedVehicles.splice(index, 1);
+        updateAddedVehiclesDisplay();
+        showToast("Vehicle removed successfully!");
+      }
+    }
+
+    function updateAddedVehiclesDisplay() {
+      const container = document.getElementById("addedVehiclesContainer");
+      const title = document.getElementById("addedVehiclesTitle");
+      const list = document.getElementById("addedVehiclesList");
+      
+      if (addedVehicles.length === 0) {
+        container.style.display = "none";
+        return;
+      }
+      
+      container.style.display = "block";
+      title.textContent = `Added Vehicles (${addedVehicles.length}):`;
+      list.innerHTML = "";
+      
+      addedVehicles.forEach((vehicle, index) => {
+        const vehicleDiv = document.createElement("div");
+        vehicleDiv.className = "vehicle-item";
+        
+        const vehicleInfo = document.createElement("div");
+        vehicleInfo.className = "vehicle-info";
+        vehicleInfo.innerHTML = `
+          <span class="vehicle-number">${vehicle.vehicleNo}</span>
+          <span class="vehicle-type">- ${vehicle.vehicleType}</span>
+          ${vehicle.isEV ? '<span class="ev-badge">⚡ EV</span>' : ''}
+        `;
+        
+        const removeBtn = document.createElement("button");
+        removeBtn.textContent = "Remove";
+        removeBtn.className = "danger";
+        removeBtn.style.cssText = "padding: 6px 12px; font-size: 12px; margin: 0;";
+        removeBtn.onclick = () => removeVehicle(index);
+        
+        vehicleDiv.appendChild(vehicleInfo);
+        vehicleDiv.appendChild(removeBtn);
+        list.appendChild(vehicleDiv);
+      });
+    }
+
+    function showFormError(formNumber, errorType, message) {
+      const errorElement = document.getElementById(`${errorType}_${formNumber}`);
+      if (errorElement) {
+        errorElement.textContent = message;
+        errorElement.style.display = "block";
+      }
+      return false;
+    }
+
+    function clearFormErrors(formNumber) {
+      const errorElements = document.querySelectorAll(`#vehicleError_${formNumber}, #vehicleTypeError_${formNumber}`);
+      errorElements.forEach(element => {
+        element.textContent = "";
+        element.style.display = "none";
+      });
+    }
+
+    function showError(elementId, message) {
+      const errorElement = document.getElementById(elementId);
+      errorElement.textContent = message;
+      errorElement.style.display = "block";
+      return false;
+    }
+
+    function clearErrors() {
+      const errorElements = document.querySelectorAll('.error-message');
+      errorElements.forEach(element => {
+        element.textContent = "";
+        element.style.display = "none";
+      });
+    }
+
+    async function goToNextStep() {
+      clearErrors();
+      
+      const name = document.getElementById("name").value.trim();
+      const phoneNo = document.getElementById("phoneNo").value.trim();
+      const licenseNo = document.getElementById("licenseNo").value.trim();
+      
+      let isValid = true;
+      
+      // Validate name
+      if (name.length < 3) {
+        isValid = showError("nameError", "Name must be at least 3 characters");
+      }
+      
+      // Validate phone number
+      if (!validatePhoneNumber(phoneNo)) {
+        isValid = showError("phoneError", "Enter a valid 10-digit phone number");
+      }
+      
+      // Validate license/RC number
+      if (!validateLicenseNumber(licenseNo)) {
+        isValid = showError("licenseError", "Proof must contain both letters and numbers");
+      }
+      
+      // Check if we have at least one vehicle
+      if (addedVehicles.length === 0) {
+        isValid = showError("phoneError", "Please add at least one vehicle before proceeding");
+        showToast("Please add at least one vehicle to continue", true);
+      }
+      
+      // Check if there are any unsaved vehicle forms
+      const openForms = document.querySelectorAll('.vehicle-form');
+      if (openForms.length > 0) {
+        isValid = false;
+        showToast("Please save or cancel all open vehicle forms before proceeding", true);
+      }
+      
+      if (!isValid) {
+        return;
+      }
+
+      // Show loading state
+      const submitBtn = document.querySelector('button[type="submit"]');
+      const originalText = submitBtn.textContent;
+      submitBtn.textContent = "Registering...";
+      submitBtn.disabled = true;
+
+      try {
+        // Prepare data for backend
+        const userData = {
+          name,
+          phoneNo,
+          licenseNo,
+          vehicles: addedVehicles
+        };
+
+        let registrationSuccess = false;
+        let userId = null;
+
+        // Try to save to backend first
+        try {
+          const result = await registerUser(userData);
+          if (result.success) {
+            registrationSuccess = true;
+            userId = result.userId;
+            showToast("Registration successful with backend! Proceeding to step 2...");
+          }
+        } catch (backendError) {
+          console.warn('Backend registration failed, falling back to local storage:', backendError);
+          
+          // Fallback to local storage
+          const existingUsers = JSON.parse(localStorage.getItem("registeredUsers")) || [];
+          
+          // Check if phone number already exists locally
+          if (existingUsers.some(user => user.phoneNo === phoneNo)) {
+            throw new Error('Phone number already registered locally');
+          }
+          
+          // Generate a local user ID
+          userId = 'local_' + Date.now();
+          
+          // Save user data locally
+          const localUserData = {
+            ...userData,
+            userId: userId,
+            registeredAt: new Date().toISOString()
+          };
+          
+          existingUsers.push(localUserData);
+          localStorage.setItem("registeredUsers", JSON.stringify(existingUsers));
+          
+          // Also save vehicles to the existing registered vehicles system
+          addedVehicles.forEach(vehicle => {
+            addRegisteredVehicle({...vehicle, ownerName: name, userId: userId});
+          });
+          
+          registrationSuccess = true;
+          showToast("Registration successful (local storage)! Proceeding to step 2...");
+        }
+        
+        if (registrationSuccess) {
+          // Store data in session storage for step 2
+          sessionStorage.setItem("step1Data", JSON.stringify({ 
+            name, 
+            phoneNo,
+            vehicles: addedVehicles,
+            licenseNo,
+            userId: userId
+          }));
+          
+          // Clear existing user flag since this is a new registration
+          sessionStorage.removeItem("isExistingUser");
+          
+          setTimeout(() => {
+            window.location.href = "register2.html";
+          }, 1500);
+        }
+        
+      } catch (error) {
+        console.error('Registration error:', error);
+        
+        if (error.message.includes('Phone number already registered')) {
+          showError("phoneError", "This phone number is already registered");
+        } else {
+          showToast("Registration failed: " + error.message, true);
+        }
+      } finally {
+        // Restore button state
+        submitBtn.textContent = originalText;
+        submitBtn.disabled = false;
+      }
+    }
+    
+    // Add input validation as user types
+    document.getElementById("phoneNo").addEventListener("input", function() {
+      this.value = this.value.replace(/[^0-9]/g, "");
+    });
+    
+    // Vehicle number uppercase conversion is handled in dynamic forms
+    
+    // Check if we're coming back from step 2
+    window.addEventListener('load', function() {
+      // Check if this is an existing user who should go to register2.html instead
+      const isExistingUser = sessionStorage.getItem("isExistingUser") === "true";
+      if (isExistingUser) {
+        const registeredVehicles = getRegisteredVehicles();
+        if (registeredVehicles && registeredVehicles.length > 0) {
+          showToast("Redirecting to vehicle selection...");
+          setTimeout(() => {
+            window.location.href = "register2.html";
+          }, 1000);
+          return;
+        }
+      }
+      
+      const step1Data = JSON.parse(sessionStorage.getItem("step1Data"));
+      if (step1Data) {
+        document.getElementById("name").value = step1Data.name;
+        document.getElementById("phoneNo").value = step1Data.phoneNo;
+        
+        // Handle vehicles - restore all vehicles to the added vehicles list
+        if (step1Data.vehicles && step1Data.vehicles.length > 0) {
+          addedVehicles = [...step1Data.vehicles];
+          updateAddedVehiclesDisplay();
+        }
+        // Handle old format for backward compatibility
+        else if (step1Data.vehicleNo) {
+          addedVehicles = [{
+            vehicleNo: step1Data.vehicleNo,
+            vehicleType: step1Data.vehicleType,
+            isEV: step1Data.isEV
+          }];
+          updateAddedVehiclesDisplay();
+        }
+        
+        if (step1Data.licenseNo) {
+          document.getElementById("licenseNo").value = step1Data.licenseNo;
+        }
+      }
+    });
+  </script>
+</body>
+</html>

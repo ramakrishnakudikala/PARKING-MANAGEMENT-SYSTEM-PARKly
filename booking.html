@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parking Slot Booking</title>
+    <!-- Google Fonts - Poppins -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+    <script src="js/utils.js"></script>
+    <style>
+        .logo-container {
+            text-align: center;
+            padding: 30px 0;
+            background: linear-gradient(to right, #000d6b, #0037a0);
+            margin-bottom: 30px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .logo {
+            display: inline-block;
+        }
+        
+        .logo h1 {
+            font-size: 3rem;
+            color: white;
+            margin: 0;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .logo p {
+            color: #dcdcdc;
+            margin-top: 5px;
+            font-size: 1.2rem;
+        }
+        
+        /* Enhanced slot styling for vehicle type restrictions */
+        .slot.restricted {
+            background-color: #fafafa !important;
+            border-color: #bdbdbd !important;
+            color: #9e9e9e !important;
+            cursor: not-allowed !important;
+            opacity: 0.4 !important;
+            position: relative;
+        }
+        
+        .slot.restricted::before {
+            content: "🚫";
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            font-size: 10px;
+        }
+        
+        /* Enhanced EV slot styling */
+        .slot.ev-slot {
+            background-color: #e3f2fd !important;
+            border-color: #2196f3 !important;
+            color: #1565c0 !important;
+            position: relative;
+        }
+        
+        .slot.ev-slot::after {
+            content: "⚡";
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            font-size: 12px;
+            color: #2196f3;
+        }
+        
+        /* Row separation styling */
+        .slots-grid {
+            position: relative;
+        }
+        
+        /* Visual separators for different sections */
+        .slots-grid::before {
+            content: "";
+            position: absolute;
+            top: 140px; /* After 2nd row */
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(to right, transparent, #ff9800, transparent);
+            z-index: 1;
+            pointer-events: none;
+        }
+        
+        .slots-grid::after {
+            content: "";
+            position: absolute;
+            top: 280px; /* After 4th row */
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(to right, transparent, #2196f3, transparent);
+            z-index: 1;
+            pointer-events: none;
+        }
+    </style>
+    <script>
+        function loadSlots() {
+            let user = getCurrentUser();
+            if (!user) {
+                showToast("Please register first", true);
+                setTimeout(() => {
+                    window.location.href = "register.html";
+                }, 2000);
+                return;
+            }
+
+            // Update page title with user info
+            const userInfoText = `Vehicle: ${user.vehicleNo} | Type: ${user.vehicleType}${user.isEV ? ' (EV)' : ''} | Mall: ${user.mall}`;
+            document.getElementById("userInfo").textContent = userInfoText;
+            
+            // Update slot availability info
+            let availabilityText = "";
+            if (user.isEV && user.vehicleType === "2 Wheeler") {
+                availabilityText = "⚡🏍️ 2-Wheeler EV: You can book slots 11-23 (rows 3-5, with 21-23 EV-preferred).";
+            } else if (user.isEV && user.vehicleType === "4 Wheeler") {
+                availabilityText = "⚡🚗 4-Wheeler EV: You can book slots 1-10 & 24-25 (rows 1-2 & EV slots 24-25).";
+            } else if (user.vehicleType === "2 Wheeler") {
+                availabilityText = "🏍️ 2 Wheeler: You can book slots 11-20 (rows 3-4 only).";
+            } else if (user.vehicleType === "4 Wheeler") {
+                availabilityText = "🚗 4 Wheeler: You can book slots 1-10 (rows 1-2 only).";
+            }
+            document.getElementById("slotAvailability").textContent = availabilityText;
+
+            // Add row labels to show vehicle type restrictions
+            const rowLabelsDiv = document.getElementById("rowLabels");
+            let rowLabelsHTML = "";
+            
+            if (user.isEV && user.vehicleType === "4 Wheeler") {
+                rowLabelsHTML = `
+                    <div style="display: inline-block; margin: 5px; padding: 6px 10px; background: #4CAF50; color: white; border-radius: 4px; font-size: 12px;">
+                        🚗 Rows 1-2: Available (4-Wheeler)
+                    </div>
+                    <div style="display: inline-block; margin: 5px; padding: 6px 10px; background: #f44336; color: white; border-radius: 4px; font-size: 12px;">
+                        🏍️ Rows 3-4: 2-Wheeler Only
+                    </div>
+                    <div style="display: inline-block; margin: 5px; padding: 6px 10px; background: #f44336; color: white; border-radius: 4px; font-size: 12px;">
+                        ⚡🏍️ Slots 21-23: 2-Wheeler EV
+                    </div>
+                    <div style="display: inline-block; margin: 5px; padding: 6px 10px; background: #2196f3; color: white; border-radius: 4px; font-size: 12px;">
+                        ⚡🚗 Slots 24-25: Available (4-Wheeler EV)
+                    </div>
+                `;
+            } else if (user.isEV && user.vehicleType === "2 Wheeler") {
+                rowLabelsHTML = `
+                    <div style="display: inline-block; margin: 5px; padding: 6px 10px; background: #f44336; color: white; border-radius: 4px; font-size: 12px;">
+                        🚗 Rows 1-2: 4-Wheeler Only
+                    </div>
+                    <div style="display: inline-block; margin: 5px; padding: 6px 10px; background: #4CAF50; color: white; border-radius: 4px; font-size: 12px;">
+                        🏍️ Rows 3-4: Available (2-Wheeler)
+                    </div>
+                    <div style="display: inline-block; margin: 5px; padding: 6px 10px; background: #2196f3; color: white; border-radius: 4px; font-size: 12px;">
+                        ⚡🏍️ Slots 21-23: Available (2-Wheeler EV)
+                    </div>
+                    <div style="display: inline-block; margin: 5px; padding: 6px 10px; background: #f44336; color: white; border-radius: 4px; font-size: 12px;">
+                        ⚡🚗 Slots 24-25: 4-Wheeler EV Only
+                    </div>
+                `;
+            } else if (user.vehicleType === "4 Wheeler") {
+                rowLabelsHTML = `
+                    <div style="display: inline-block; margin: 5px; padding: 6px 10px; background: #4CAF50; color: white; border-radius: 4px; font-size: 12px;">
+                        🚗 Rows 1-2: Available (4-Wheeler)
+                    </div>
+                    <div style="display: inline-block; margin: 5px; padding: 6px 10px; background: #f44336; color: white; border-radius: 4px; font-size: 12px;">
+                        🏍️ Rows 3-4: 2-Wheeler Only
+                    </div>
+                    <div style="display: inline-block; margin: 5px; padding: 6px 10px; background: #f44336; color: white; border-radius: 4px; font-size: 12px;">
+                        ⚡ Row 5: EV Only
+                    </div>
+                `;
+            } else if (user.vehicleType === "2 Wheeler") {
+                rowLabelsHTML = `
+                    <div style="display: inline-block; margin: 5px; padding: 6px 10px; background: #f44336; color: white; border-radius: 4px; font-size: 12px;">
+                        🚗 Rows 1-2: 4-Wheeler Only
+                    </div>
+                    <div style="display: inline-block; margin: 5px; padding: 6px 10px; background: #4CAF50; color: white; border-radius: 4px; font-size: 12px;">
+                        🏍️ Rows 3-4: Available (2-Wheeler)
+                    </div>
+                    <div style="display: inline-block; margin: 5px; padding: 6px 10px; background: #f44336; color: white; border-radius: 4px; font-size: 12px;">
+                        ⚡ Row 5: EV Only
+                    </div>
+                `;
+            }
+            rowLabelsDiv.innerHTML = rowLabelsHTML;
+
+            let lot = document.getElementById("parkingLot");
+            lot.innerHTML = '';
+
+            const slotKey = getSlotKey(user);
+            let bookedSlots = getBookedSlots();
+            let currentGrid = bookedSlots[slotKey] || {};
+
+            // Create 5x5 grid with vehicle-type specific slots
+            const rows = 5;
+            const cols = 5;
+            const totalSlots = rows * cols;
+
+            // Create parking lot grid
+            for (let r = 0; r < rows; r++) {
+                for (let c = 0; c < cols; c++) {
+                    let slotNumber = r * cols + c + 1; // Slot numbers 1-25
+                    let slotId = `${slotNumber}`;
+                    let slot = document.createElement("div");
+                    slot.classList.add("slot");
+                    slot.setAttribute("role", "button");
+                    slot.setAttribute("aria-label", `Parking slot ${slotId}`);
+                    slot.innerText = slotId;
+
+                    // Determine slot availability based on vehicle type and EV status
+                    let isSlotAvailable = true;
+                    let slotClass = "";
+                    
+                    // Determine slot availability based on new allocation rules
+                    if (user.isEV && user.vehicleType === "4 Wheeler") {
+                        // 4-Wheeler EV: Can use slots 1-10 (rows 1-2) and 24-25 (4-Wheeler EV slots)
+                        if (slotNumber >= 1 && slotNumber <= 10) {
+                            // Regular 4-wheeler slots
+                        } else if (slotNumber >= 24 && slotNumber <= 25) {
+                            // 4-Wheeler EV slots
+                            slot.classList.add("ev-slot");
+                            slot.setAttribute("aria-label", `4-Wheeler EV Parking slot ${slotId}`);
+                        } else {
+                            // Restricted slots
+                            slot.classList.add("restricted");
+                            slot.setAttribute("aria-disabled", "true");
+                            if (slotNumber >= 11 && slotNumber <= 20) {
+                                slot.setAttribute("aria-label", `Restricted parking slot ${slotId} - Reserved for 2-wheelers`);
+                            } else if (slotNumber >= 21 && slotNumber <= 23) {
+                                slot.setAttribute("aria-label", `Restricted parking slot ${slotId} - Reserved for 2-wheeler EV`);
+                            }
+                            isSlotAvailable = false;
+                        }
+                    } else if (user.isEV && user.vehicleType === "2 Wheeler") {
+                        // 2-Wheeler EV: Can use slots 11-20 (rows 3-4) and 21-23 (2-Wheeler EV slots)
+                        if (slotNumber >= 11 && slotNumber <= 20) {
+                            // Regular 2-wheeler slots
+                        } else if (slotNumber >= 21 && slotNumber <= 23) {
+                            // 2-Wheeler EV slots
+                            slot.classList.add("ev-slot");
+                            slot.setAttribute("aria-label", `2-Wheeler EV Parking slot ${slotId}`);
+                        } else {
+                            // Restricted slots
+                            slot.classList.add("restricted");
+                            slot.setAttribute("aria-disabled", "true");
+                            if (slotNumber >= 1 && slotNumber <= 10) {
+                                slot.setAttribute("aria-label", `Restricted parking slot ${slotId} - Reserved for 4-wheelers`);
+                            } else if (slotNumber >= 24 && slotNumber <= 25) {
+                                slot.setAttribute("aria-label", `Restricted parking slot ${slotId} - Reserved for 4-wheeler EV`);
+                            }
+                            isSlotAvailable = false;
+                        }
+                    } else if (user.vehicleType === "2 Wheeler") {
+                        // Non-EV 2-Wheeler: Can ONLY use slots 11-20 (rows 3-4)
+                        if (slotNumber >= 11 && slotNumber <= 20) {
+                            // Available slots for 2-wheelers
+                        } else {
+                            slot.classList.add("restricted");
+                            slot.setAttribute("aria-disabled", "true");
+                            if (slotNumber >= 1 && slotNumber <= 10) {
+                                slot.setAttribute("aria-label", `Restricted parking slot ${slotId} - Reserved for 4-wheelers`);
+                            } else if (slotNumber >= 21 && slotNumber <= 25) {
+                                slot.setAttribute("aria-label", `Restricted parking slot ${slotId} - Reserved for EV vehicles`);
+                            }
+                            isSlotAvailable = false;
+                        }
+                    } else if (user.vehicleType === "4 Wheeler") {
+                        // Non-EV 4-Wheeler: Can ONLY use slots 1-10 (rows 1-2)
+                        if (slotNumber >= 1 && slotNumber <= 10) {
+                            // Available slots for 4-wheelers
+                        } else {
+                            slot.classList.add("restricted");
+                            slot.setAttribute("aria-disabled", "true");
+                            if (slotNumber >= 11 && slotNumber <= 20) {
+                                slot.setAttribute("aria-label", `Restricted parking slot ${slotId} - Reserved for 2-wheelers`);
+                            } else if (slotNumber >= 21 && slotNumber <= 25) {
+                                slot.setAttribute("aria-label", `Restricted parking slot ${slotId} - Reserved for EV vehicles`);
+                            }
+                            isSlotAvailable = false;
+                        }
+                    }
+
+                    // Mark as occupied if already booked in this vehicle type's pool
+                    if (currentGrid[slotId]) {
+                        slot.classList.add("occupied");
+                        slot.setAttribute("aria-disabled", "true");
+                        isSlotAvailable = false;
+                    }
+
+                    // Set tabindex for available slots
+                    if (isSlotAvailable) {
+                        slot.setAttribute("tabindex", "0");
+                    }
+
+                    // Add click and keyboard event handlers
+                    slot.onclick = function() {
+                        selectSlot(slot);
+                    };
+                    
+                    slot.onkeydown = function(e) {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            selectSlot(slot);
+                        }
+                    };
+
+                    lot.appendChild(slot);
+                }
+            }
+        }
+
+        function selectSlot(slot) {
+            if (!slot.classList.contains("occupied") && 
+                !slot.classList.contains("ev-only") && 
+                !slot.classList.contains("restricted")) {
+                document.querySelectorAll('.slot.selected').forEach(s => s.classList.remove('selected'));
+                slot.classList.add("selected");
+            } else if (slot.classList.contains("ev-only")) {
+                showToast("This slot is reserved for Electric Vehicles only.", true);
+            } else if (slot.classList.contains("restricted")) {
+                const user = getCurrentUser();
+                const slotNumber = parseInt(slot.innerText);
+                let message = "";
+                
+                if (user.isEV && user.vehicleType === "4 Wheeler") {
+                    if (slotNumber >= 11 && slotNumber <= 20) {
+                        message = "This slot is reserved for 2-wheelers. 4-Wheeler EVs can use slots 1-10 & 24-25.";
+                    } else if (slotNumber >= 21 && slotNumber <= 23) {
+                        message = "This slot is reserved for 2-Wheeler EVs. 4-Wheeler EVs can use slots 1-10 & 24-25.";
+                    }
+                } else if (user.isEV && user.vehicleType === "2 Wheeler") {
+                    if (slotNumber >= 1 && slotNumber <= 10) {
+                        message = "This slot is reserved for 4-wheelers. 2-Wheeler EVs can use slots 11-23.";
+                    } else if (slotNumber >= 24 && slotNumber <= 25) {
+                        message = "This slot is reserved for 4-Wheeler EVs. 2-Wheeler EVs can use slots 11-23.";
+                    }
+                } else if (user.vehicleType === "2 Wheeler") {
+                    if (slotNumber >= 1 && slotNumber <= 10) {
+                        message = "This slot is reserved for 4-wheelers. 2-wheelers can only use slots 11-20.";
+                    } else if (slotNumber >= 21 && slotNumber <= 25) {
+                        message = "This slot is reserved for EV vehicles. 2-wheelers can only use slots 11-20.";
+                    }
+                } else if (user.vehicleType === "4 Wheeler") {
+                    if (slotNumber >= 11 && slotNumber <= 20) {
+                        message = "This slot is reserved for 2-wheelers. 4-wheelers can only use slots 1-10.";
+                    } else if (slotNumber >= 21 && slotNumber <= 25) {
+                        message = "This slot is reserved for EV vehicles. 4-wheelers can only use slots 1-10.";
+                    }
+                } else {
+                    message = `This slot is not available for ${user.vehicleType}.`;
+                }
+                
+                showToast(message, true);
+            }
+        }
+
+        function confirmBooking() {
+            let user = getCurrentUser();
+            if (!user) {
+                showToast("User session expired. Please register again.", true);
+                setTimeout(() => {
+                    window.location.href = "register.html";
+                }, 2000);
+                return;
+            }
+
+            let selectedSlot = document.querySelector(".slot.selected");
+            if (!selectedSlot) {
+                showToast("Please select a parking slot.", true);
+                return;
+            }
+
+            if (confirmAction(`Confirm booking slot ${selectedSlot.innerText}?`)) {
+                let slotKey = getSlotKey(user);
+                let bookedSlots = getBookedSlots();
+
+                if (!bookedSlots[slotKey]) {
+                    bookedSlots[slotKey] = {};
+                }
+
+                // Store booking details with entry time
+                const entryTime = new Date().toLocaleString();
+                bookedSlots[slotKey][selectedSlot.innerText] = {
+                    vehicleNo: user.vehicleNo,
+                    vehicleType: user.vehicleType,
+                    isEV: user.isEV,
+                    mall: user.mall,
+                    entryTime: entryTime,
+                    slotNumber: selectedSlot.innerText
+                };
+                saveBookedSlots(bookedSlots);
+
+                // Store current booking details for slotsdetails page
+                const currentBooking = {
+                    slotNumber: selectedSlot.innerText,
+                    vehicleNo: user.vehicleNo,
+                    vehicleType: user.vehicleType,
+                    isEV: user.isEV,
+                    mall: user.mall,
+                    entryTime: entryTime
+                };
+                localStorage.setItem("currentBooking", JSON.stringify(currentBooking));
+
+                showToast(`Slot ${selectedSlot.innerText} booked successfully!`);
+                setTimeout(() => {
+                    window.location.href = "slotsdetails.html";
+                }, 2000);
+            }
+        }
+
+        function goBack() {
+            // Check if user has registered vehicles to determine where to go back
+            const registeredVehicles = getRegisteredVehicles();
+            if (registeredVehicles && registeredVehicles.length > 0) {
+                // User has vehicles, go back to register2.html
+                sessionStorage.setItem("isExistingUser", "true");
+                window.location.href = "register2.html";
+            } else {
+                // No vehicles, go back to register.html
+                window.location.href = "register.html";
+            }
+        }
+    </script>
+</head>
+<body onload="loadSlots()">
+    <!-- Logo container -->
+    <div style="text-align: center; padding: 30px 0; background: linear-gradient(to right, #000d6b, #0037a0); margin-bottom: 30px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);">
+        <div style="display: inline-block;">
+            <h1 style="font-size: 3rem; color: white; margin: 0; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);">PARKly</h1>
+            <p style="color: #dcdcdc; margin-top: 5px; font-size: 1.2rem;">Parking made efficiently</p>
+        </div>
+    </div>
+    
+    <div class="container">
+        <div class="form-container">
+            <h2>Select a Parking Slot</h2>
+            <p>User: <span id="userInfo"></span></p>
+            <div id="slotInfo" style="background-color: #e3f2fd; padding: 10px; border-radius: 5px; margin: 10px 0; border-left: 4px solid #2196f3;">
+                <p id="slotAvailability" style="margin: 0; color: #1565c0; font-weight: 500;"></p>
+            </div>
+            
+            <!-- Parking slot legend -->
+            <div class="slot-legend">
+                <h4>Slot Legend:</h4>
+                <div class="legend-items">
+                    <div class="legend-item">
+                        <div class="legend-slot available"></div>
+                        <span>Available</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-slot occupied"></div>
+                        <span>Occupied</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-slot ev-slot"></div>
+                        <span>EV Slot</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-slot restricted"></div>
+                        <span>Restricted</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-slot selected"></div>
+                        <span>Selected</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Row labels for vehicle type restrictions -->
+            <div id="rowLabels" style="margin: 20px 0; text-align: center;"></div>
+            
+            <div id="parkingLot" class="slots-grid" role="group" aria-label="Available parking slots"></div>
+            <div class="button-group">
+                <button onclick="confirmBooking()" aria-label="Confirm your parking slot booking">Confirm Booking</button>
+                <button onclick="goBack()" class="secondary" aria-label="Go back to registration">Back</button>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
