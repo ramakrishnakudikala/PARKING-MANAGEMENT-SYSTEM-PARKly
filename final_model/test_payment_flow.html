@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Payment Flow - PARKly</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        button {
+            background: #4caf50;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 10px 0;
+            width: 100%;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        .info {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border-left: 4px solid #2196f3;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h2>🧪 Test Payment Flow</h2>
+        
+        <div class="info">
+            <strong>Test Scenario:</strong><br>
+            This will simulate a parking session and test the payment flow:
+            <ol>
+                <li>Create a mock booking</li>
+                <li>Go to pay.html</li>
+                <li>Click "Pay" → Should redirect to paydetails.html</li>
+                <li>Select payment method and click "Done"</li>
+                <li>Should show QR code</li>
+                <li>Click QR code → Should free slot and redirect to index.html</li>
+            </ol>
+        </div>
+
+        <button onclick="setupTestBooking()">🚀 Start Payment Flow Test</button>
+        
+        <button onclick="clearTestData()">🗑️ Clear Test Data</button>
+        
+        <div id="status" style="margin-top: 20px; padding: 10px; background: #f8f9fa; border-radius: 5px;"></div>
+    </div>
+
+    <script>
+        function setupTestBooking() {
+            // Create a mock current booking
+            const mockBooking = {
+                vehicleNo: "AP01AB1234",
+                vehicleType: "4 Wheeler",
+                isEV: false,
+                mall: "Mall A",
+                slotNumber: "A15",
+                entryTime: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString() // 2 hours ago
+            };
+            
+            // Store in localStorage (simulating utils.js functions)
+            localStorage.setItem("currentBooking", JSON.stringify(mockBooking));
+            
+            // Create mock booked slots
+            const bookedSlots = {
+                "Mall A_4 Wheeler": {
+                    "A15": mockBooking
+                }
+            };
+            localStorage.setItem("bookedSlots", JSON.stringify(bookedSlots));
+            
+            document.getElementById('status').innerHTML = `
+                <strong>✅ Test booking created!</strong><br>
+                Vehicle: ${mockBooking.vehicleNo}<br>
+                Slot: ${mockBooking.slotNumber}<br>
+                Entry: ${new Date(mockBooking.entryTime).toLocaleString()}<br>
+                <br>
+                <em>Now redirecting to pay.html...</em>
+            `;
+            
+            setTimeout(() => {
+                window.location.href = 'pay.html';
+            }, 2000);
+        }
+        
+        function clearTestData() {
+            localStorage.removeItem("currentBooking");
+            localStorage.removeItem("bookedSlots");
+            sessionStorage.removeItem("paymentInfo");
+            
+            document.getElementById('status').innerHTML = `
+                <strong>🗑️ Test data cleared!</strong><br>
+                All mock bookings and payment data removed.
+            `;
+        }
+    </script>
+</body>
+</html>

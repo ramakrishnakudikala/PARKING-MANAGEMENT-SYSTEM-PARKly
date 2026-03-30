@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exit Parking</title>
+    <!-- Google Fonts - Poppins -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+    <script src="js/utils.js"></script>
+    <style>
+        .container {
+            text-align: center;
+        }
+
+        .image-container {
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .qr-placeholder {
+            width: 200px;
+            height: 200px;
+            background-color: #f0f0f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px dashed #ccc;
+            margin: 0 auto;
+        }
+
+        .button-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .user-info {
+            background-color: #f0f0f0;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 20px;
+            display: none;
+        }
+    </style>
+    <script>
+        function loadUserInfo() {
+            const user = getCurrentUser();
+            if (user) {
+                document.getElementById("userInfo").style.display = "block";
+                document.getElementById("userName").textContent = user.name;
+                document.getElementById("userVehicle").textContent = user.vehicleNo;
+                document.getElementById("exitVehicleNo").value = user.vehicleNo;
+            }
+        }
+
+        function freeSlot() {
+            let vehicleNo = document.getElementById("exitVehicleNo").value.trim().toUpperCase();
+            if (!vehicleNo) {
+                showToast("Please enter your vehicle number", true);
+                return;
+            }
+
+            if (!validateVehicleNumber(vehicleNo)) {
+                showToast("Please enter a valid vehicle number (Format: AA00AA0000)", true);
+                return;
+            }
+
+            let user = getCurrentUser();
+            if (!user) {
+                showToast("No user data found. Please go back to the registration page.", true);
+                return;
+            }
+
+            if (!confirmAction("Are you sure you want to free your parking slot?")) {
+                return;
+            }
+
+            let mall = user.mall;
+            let slotKey = getSlotKey(user);
+
+            let bookedSlots = getBookedSlots();
+            let freed = false;
+            let slotNumber = "";
+
+            if (bookedSlots[slotKey]) {
+                for (let slot in bookedSlots[slotKey]) {
+                    const booking = bookedSlots[slotKey][slot];
+                    // Handle both old format (string) and new format (object)
+                    const bookedVehicleNo = typeof booking === 'string' ? booking : booking.vehicleNo;
+                    if (bookedVehicleNo === vehicleNo) {
+                        slotNumber = slot;
+                        delete bookedSlots[slotKey][slot];
+                        freed = true;
+                        break;
+                    }
+                }
+            }
+
+            if (freed) {
+                saveBookedSlots(bookedSlots);
+                showToast(`Your slot #${slotNumber} has been freed.`);
+                setTimeout(() => {
+                    window.location.href = "register.html";
+                }, 2000);
+            } else {
+                showToast("No slot found for this vehicle number in the selected mall.", true);
+            }
+        }
+
+        function searchVehicle() {
+            let vehicleNo = document.getElementById("exitVehicleNo").value.trim().toUpperCase();
+            if (!vehicleNo) {
+                showToast("Please enter a vehicle number to search", true);
+                return;
+            }
+
+            if (!validateVehicleNumber(vehicleNo)) {
+                showToast("Please enter a valid vehicle number (Format: AA00AA0000)", true);
+                return;
+            }
+
+            let bookedSlots = getBookedSlots();
+            let found = false;
+            let slotInfo = "";
+
+            // Search through all slots
+            for (let mallKey in bookedSlots) {
+                for (let slotId in bookedSlots[mallKey]) {
+                    const booking = bookedSlots[mallKey][slotId];
+                    // Handle both old format (string) and new format (object)
+                    const bookedVehicleNo = typeof booking === 'string' ? booking : booking.vehicleNo;
+                    if (bookedVehicleNo === vehicleNo) {
+                        found = true;
+                        // Extract mall name from the key
+                        const mallName = mallKey.split('_')[0];
+                        const slotType = mallKey.includes('_EV') ? 'EV' : mallKey.split('_')[1];
+                        slotInfo = `Mall: ${mallName}, Slot: ${slotId}, Type: ${slotType}`;
+                        break;
+                    }
+                }
+                if (found) break;
+            }
+
+            if (found) {
+                showToast(`Vehicle found: ${slotInfo}`);
+            } else {
+                showToast("Vehicle not found in any parking slot", true);
+            }
+        }
+    </script>
+</head>
+<body onload="loadUserInfo()">
+    <!-- Logo container -->
+    <div style="text-align: center; padding: 30px 0; background: linear-gradient(to right, #000d6b, #0037a0); margin-bottom: 30px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);">
+        <div style="display: inline-block;">
+            <h1 style="font-size: 3rem; color: white; margin: 0; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);">PARKly</h1>
+            <p style="color: #dcdcdc; margin-top: 5px; font-size: 1.2rem;">Parking made efficiently</p>
+        </div>
+    </div>
+    
+    <div class="container">
+        <div class="form-container">
+            <h2>Exit Parking</h2>
+            
+            <div class="image-container">
+                <!-- QR code image -->
+                <img src="qr.png" alt="QR Code" style="width: 200px; height: 200px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
+            </div>
+            
+            <div id="userInfo" class="user-info">
+                <p><strong>Current User:</strong> <span id="userName"></span></p>
+                <p><strong>Vehicle:</strong> <span id="userVehicle"></span></p>
+            </div>
+            
+            <label for="exitVehicleNo">Vehicle Number</label>
+            <input type="text" id="exitVehicleNo" placeholder="Enter your vehicle number (AA00AA0000)" aria-label="Enter your vehicle number">
+            
+            <div class="button-group">
+                <button onclick="freeSlot()" aria-label="Free your parking slot">Free Slot</button>
+                <button onclick="searchVehicle()" aria-label="Search for a vehicle">Search Vehicle</button>
+                <button onclick="window.location.href='register.html'" class="secondary" aria-label="Go to registration page">New Registration</button>
+                <button onclick="window.location.href='index.html'" class="secondary" aria-label="Go to home page">Home</button>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

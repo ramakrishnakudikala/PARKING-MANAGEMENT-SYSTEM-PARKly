@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Free Specific Slots</title>
+    <script src="js/utils.js"></script>
+</head>
+<body>
+    <h1>Free Specific Slots</h1>
+    <button onclick="freeSpecificSlots()">Free Slot 13 (Next Galleria) & Slot 18 (Inorbit)</button>
+    <div id="result"></div>
+
+    <script>
+        function freeSpecificSlots() {
+            // Get current booked slots
+            let bookedSlots = getBookedSlots();
+            
+            console.log('Current booked slots:', bookedSlots);
+            
+            // Free slot 13 in Next Galleria (check all vehicle types)
+            const nextGalleriaKeys = [
+                'Next Galleria_2-Wheeler',
+                'Next Galleria_4-Wheeler', 
+                'Next Galleria_2-Wheeler_EV',
+                'Next Galleria_4-Wheeler_EV'
+            ];
+            
+            // Free slot 18 in Inorbit (check all vehicle types)
+            const inorbitKeys = [
+                'Inorbit_2-Wheeler',
+                'Inorbit_4-Wheeler',
+                'Inorbit_2-Wheeler_EV', 
+                'Inorbit_4-Wheeler_EV'
+            ];
+            
+            let freed = [];
+            
+            // Check and free slot 13 in Next Galleria
+            nextGalleriaKeys.forEach(key => {
+                if (bookedSlots[key] && bookedSlots[key]['13']) {
+                    delete bookedSlots[key]['13'];
+                    freed.push(`Slot 13 in Next Galleria (${key})`);
+                }
+            });
+            
+            // Check and free slot 18 in Inorbit
+            inorbitKeys.forEach(key => {
+                if (bookedSlots[key] && bookedSlots[key]['18']) {
+                    delete bookedSlots[key]['18'];
+                    freed.push(`Slot 18 in Inorbit (${key})`);
+                }
+            });
+            
+            // Save updated slots
+            saveBookedSlots(bookedSlots);
+            
+            // Display result
+            const resultDiv = document.getElementById('result');
+            if (freed.length > 0) {
+                resultDiv.innerHTML = '<h3>Freed slots:</h3><ul>' + 
+                    freed.map(slot => `<li>${slot}</li>`).join('') + 
+                    '</ul>';
+                resultDiv.style.color = 'green';
+            } else {
+                resultDiv.innerHTML = '<h3>No slots found to free. They might already be available.</h3>';
+                resultDiv.style.color = 'orange';
+            }
+            
+            console.log('Updated booked slots:', bookedSlots);
+            console.log('Freed slots:', freed);
+        }
+        
+        // Show current status on page load
+        window.onload = function() {
+            const bookedSlots = getBookedSlots();
+            console.log('Current booked slots on load:', bookedSlots);
+            
+            // Check if the specific slots are occupied
+            let status = [];
+            
+            // Check Next Galleria slot 13
+            Object.keys(bookedSlots).forEach(key => {
+                if (key.includes('Next Galleria') && bookedSlots[key]['13']) {
+                    status.push(`Slot 13 in Next Galleria (${key}) is OCCUPIED`);
+                }
+            });
+            
+            // Check Inorbit slot 18
+            Object.keys(bookedSlots).forEach(key => {
+                if (key.includes('Inorbit') && bookedSlots[key]['18']) {
+                    status.push(`Slot 18 in Inorbit (${key}) is OCCUPIED`);
+                }
+            });
+            
+            if (status.length > 0) {
+                document.getElementById('result').innerHTML = '<h3>Current Status:</h3><ul>' + 
+                    status.map(s => `<li style="color: red;">${s}</li>`).join('') + 
+                    '</ul>';
+            } else {
+                document.getElementById('result').innerHTML = '<h3 style="color: green;">Both slots are already free!</h3>';
+            }
+        };
+    </script>
+</body>
+</html>

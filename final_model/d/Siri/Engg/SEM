@@ -1,0 +1,39 @@
+async function goToNextStep() {
+  // ... existing code ...
+
+  try {
+    // Prepare data for backend
+    const userData = {
+      name,
+      phoneNo,
+      licenseNo,
+      vehicles: addedVehicles
+    };
+
+    console.log('Sending user data:', userData);  // Log the data being sent
+
+    // Save to backend
+    const result = await registerUser(userData);
+    
+    console.log('Received result:', result);  // Log the received result
+
+    if (result.success) {
+      // ... existing code ...
+    } else {
+      throw new Error(result.message || 'Registration failed');
+    }
+    
+  } catch (error) {
+    console.error('Registration error:', error);
+    
+    if (error.name === 'TypeError' && error.message === 'Failed to fetch') {
+      showToast("Unable to connect to the server. Please check your internet connection and try again.", true);
+    } else if (error.message.includes('Phone number already registered')) {
+      showError("phoneError", "This phone number is already registered");
+    } else {
+      showToast("Registration failed: " + error.message, true);
+    }
+  } finally {
+    // ... existing code ...
+  }
+}
